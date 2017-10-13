@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.ecm.ha.listener.updatenotelistener">
+
+  <extension target="org.nuxeo.ecm.core.event.EventServiceComponent" point="listener">
+    <listener async="true" postCommit="true" name="updatenotelistener"
+      class="org.nuxeo.ecm.ha.UpdateNoteListener">
+        <event>documentCreated</event>
+    </listener>
+  </extension>
+
+</component>
