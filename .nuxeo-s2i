@@ -1,1 +1,1 @@
-NUXEO_PACKAGE_DIR=nuxeo-ha-testartifact/nuxeo-ha-testartifact-package/target/*.zip
+NUXEO_PACKAGE_DIR=nuxeo-ha-testartifact/nuxeo-ha-testartifact-package/target/nuxeo-ha-testartifact-package-*.zip
