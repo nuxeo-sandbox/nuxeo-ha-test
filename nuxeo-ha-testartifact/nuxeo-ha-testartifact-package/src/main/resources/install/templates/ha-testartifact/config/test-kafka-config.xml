@@ -1,0 +1,21 @@
+<component name="org.nuxeo.ecm.ha.test.kafka.contrib">
+
+  <require>org.nuxeo.ecm.platform.importer.mqueues.kafka.contrib</require>
+  <extension target="org.nuxeo.ecm.mqueues.importer.kafka.service" point="kafkaConfig">
+
+    <kafkaConfig name="default" zkServers="${kafka.zkServers}" topicPrefix="${kafka.topicPrefix}">
+      <producerProperties>
+        <property name="bootstrap.servers">${kafka.bootstrap.servers}</property>
+      </producerProperties>
+      <consumerProperties>
+        <property name="bootstrap.servers">${kafka.bootstrap.servers}</property>
+        <property name="request.timeout.ms">65000</property>
+        <property name="max.poll.interval.ms">60000</property>
+        <property name="session.timeout.ms">30000</property>
+        <property name="heartbeat.interval.ms">2000</property>
+        <property name="max.poll.records">10</property>
+      </consumerProperties>
+    </kafkaConfig>
+
+  </extension>
+</component>
