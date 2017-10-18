@@ -21,15 +21,15 @@ object CreateCheckDelete {
         )
         .pause(8 seconds) // Pause for the async worker to update the proerty
         .tryMax(4, "loopIndex") { // Loop for additional 10s max
-          
-          exec(
+          pause(4 seconds)                            
+          .exec(
             http("Step 2 - Retrieve document")
               .get("/nuxeo/api/v1/id/${docId}")
               .headers(HaHeader.default)
               .check(jsonPath("$['properties']['dc:description']").is("updated"))
               .basicAuth("${userId}","${userId}")              
           )
-          .pause(session => computePause(session("loopIndex").as[Int]))                            
+          
         }
         /*.exitBlockOnFail{
           pause(1)

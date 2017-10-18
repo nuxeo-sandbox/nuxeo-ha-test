@@ -11,8 +11,8 @@ class HaInjector extends Simulation {
 
 
   val url = System.getProperty("url", "http://nuxeo.apps.io.nuxeo.com")
-  val nbUsers = Integer.getInteger("users", 200)
-  val myRamp = java.lang.Long.getLong("ramp", 50L)
+  val nbUsers = Integer.getInteger("users", 10)
+  val myRamp = java.lang.Long.getLong("ramp", 2L)
   val myDuration = java.lang.Long.getLong("duration", 180L)
   val thinkTime = Integer.getInteger("pause", 1)
 
@@ -32,10 +32,7 @@ class HaInjector extends Simulation {
   val default = scenario("default").during(myDuration) {exec(CreateCheckDelete.scenario(thinkTime))}
 
   setUp(
-    default.inject((rampUsers(getNbUsers(scn1Percentage.intValue)).over(myRamp)))
-    //creationActivite.inject((rampUsers(getNbUsers(scn2Percentage.intValue)).over(myRamp))),
-    //majNumero.inject((rampUsers(getNbUsers(scn3Percentage.intValue)).over(myRamp)))
-    //majIntitule.inject((rampUsers(getNbUsers(scn4Percentage.intValue)).over(myRamp)))
+    default.inject((rampUsers(getNbUsers(scn1Percentage.intValue)).over(myRamp)))    
   ).protocols(httpProtocol)
 
 }
