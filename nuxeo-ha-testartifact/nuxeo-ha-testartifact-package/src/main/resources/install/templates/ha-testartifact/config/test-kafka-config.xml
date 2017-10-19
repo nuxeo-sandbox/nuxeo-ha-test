@@ -22,15 +22,4 @@
 
   </extension>
 
-
-  <extension target="org.nuxeo.ecm.core.work.service" point="queues">
-    <queue id="default">
-      <name>Default queue</name>
-      <!-- Same number of threads than user for the test-->
-      <maxThreads>10</maxThreads>
-      <!-- clear completed work instances older than 10 minutes -->
-      <clearCompletedAfterSeconds>600</clearCompletedAfterSeconds>
-    </queue>    
-  </extension>
-
 </component>
