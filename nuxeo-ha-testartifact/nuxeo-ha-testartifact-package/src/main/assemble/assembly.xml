@@ -124,7 +124,7 @@
           name="install.templates"
           value="${line.separator}
   &lt;copy dir=&quot;${package.root}/install/templates&quot; todir=&quot;${env.templates}&quot; overwrite=&quot;true&quot; /&gt;${line.separator}
-  &lt;config addtemplate=&quot;nuxeo-rolling-upgrade-test&quot; /&gt;${line.separator}"/>
+  &lt;config addtemplate=&quot;ha-testartifact&quot; /&gt;${line.separator}"/>
       </then>
     </if>
 
