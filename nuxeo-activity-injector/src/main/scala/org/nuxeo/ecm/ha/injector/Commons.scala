@@ -1,3 +1,5 @@
+package org.nuxeo.ecm.ha.injector
+
 import io.gatling.core.Predef._
 
 object HaFeeder {  

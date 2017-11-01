@@ -1,3 +1,6 @@
+package org.nuxeo.ecm.ha.injector
+
+
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
@@ -5,9 +8,7 @@ import scala.concurrent.duration._
 
 object CreateCheckDelete {
 
-  def computePause(loopIndex: Int): Duration = loopIndex seconds
-
-
+  
   val scenario = (asyncPauseTime: Integer) => {
     group("CreateCheckDelete") {
       feed(HaFeeder.userFeeder)        
@@ -24,15 +25,15 @@ object CreateCheckDelete {
 
         )        
         .pause(2 seconds)
-        .repeat(10) {
-          doIf(session => session.get("description").as[String] == null) {
+        .repeat(50) {
+          doIf("${description.isUndefined()}") {
             exec(
               http("Step 2 - Retrieve document")
                 .get("/nuxeo/api/v1/id/${docId}")
                 .headers(HaHeader.default)
                 .basicAuth("${userId}","${userId}")
-                .check(jsonPath("$['properties']['dc:description']").saveAs("description"))
-            )              
+                .check(jsonPath("$['properties']['dc:description']").optional.saveAs("description"))
+            )   
             .pause(2 seconds)            
           }
         }
