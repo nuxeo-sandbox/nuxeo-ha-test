@@ -101,7 +101,7 @@ func killPod(clientset *kubernetes.Clientset) {
 	if err != nil {
 		log.Errorf("Unable to delete pod %s: %s", pod.GetName(), err.Error())
 	} else {
-		log.Infof("Monkey played with pod %s and broke it :-)", pod.GetName())
+		log.Infof("Monkey played with pod %s and broke it :-)... deal with it !", pod.GetName())
 	}
 
 }
