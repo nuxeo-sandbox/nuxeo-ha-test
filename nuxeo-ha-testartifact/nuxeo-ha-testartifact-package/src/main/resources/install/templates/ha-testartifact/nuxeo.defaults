@@ -5,3 +5,10 @@
 nuxeo.template.includes=common
 
 org.nuxeo.ecm.instance.description=Nuxeo ECM HA tests
+
+# Activate the StreamWorkManager
+nuxeo.stream.work.enabled=true
+# The log config to use
+nuxeo.stream.work.log.config=work
+# The over provisioning factor
+nuxeo.stream.work.over.provisioning.factor=3

@@ -25,32 +25,44 @@ object CreateCheckDelete {
 
         )        
         .pause(2 seconds)
-        .repeat(50) {
-          doIf("${description.isUndefined()}") {
-            exec(
-              http("Step 2 - Retrieve document")
-                .get("/nuxeo/api/v1/id/${docId}")
-                .headers(HaHeader.default)
-                .basicAuth("${userId}","${userId}")
-                .check(jsonPath("$['properties']['dc:description']").optional.saveAs("description"))
-            )   
-            .pause(2 seconds)            
-          }
-        }
-        .exec(
-          http("Step 3 - Check updated value")
-            .get("/nuxeo/api/v1/id/${docId}")
-            .headers(HaHeader.default)
-            .basicAuth("${userId}","${userId}")
-            .check(jsonPath("$['properties']['dc:description']").is("updated"))
-        )                    
-        .exec(
-          http("Step 4 - Delete document")
-            .delete("/nuxeo/api/v1/id/${docId}")
-            .headers(HaHeader.default)
-            .basicAuth("${userId}","${userId}")                        
+        .tryMax(5) {
+          pause(50 milliseconds)
+          .exec(
+            repeat(50) {
+              doIf("${description.isUndefined()}") {
+                exec(
+                  http("Step 2 - Retrieve document")
+                    .get("/nuxeo/api/v1/id/${docId}")
+                    .headers(HaHeader.default)
+                    .basicAuth("${userId}","${userId}")
+                    .check(status.not(500))
+                    .check(status.not(504))
+                    .check(jsonPath("$['properties']['dc:description']").optional.saveAs("description"))
+                )   
+                .pause(2 seconds)            
+              }
+            }
           )
-        
+        }
+        .tryMax(5) {
+          pause(50 milliseconds)
+          .exec(
+            http("Step 3 - Check updated value")
+              .get("/nuxeo/api/v1/id/${docId}")
+              .headers(HaHeader.default)
+              .basicAuth("${userId}","${userId}")
+              .check(status.not(500))
+              .check(status.not(504))
+              .check(jsonPath("$['properties']['dc:description']").is("updated"))
+          )
+                           
+          .exec(
+            http("Step 4 - Delete document")
+              .delete("/nuxeo/api/v1/id/${docId}")
+              .headers(HaHeader.default)
+              .basicAuth("${userId}","${userId}")                        
+            )
+        }        
     }
   }
 

@@ -1,25 +1,26 @@
 <component name="org.nuxeo.ecm.ha.test.kafka.contrib">
 
-  <require>org.nuxeo.ecm.platform.importer.mqueues.kafka.contrib</require>
-  <extension target="org.nuxeo.ecm.mqueues.importer.kafka.service" point="kafkaConfig">
-
+  <extension target="org.nuxeo.stream.kafka.service" point="kafkaConfig">
     <kafkaConfig name="default" zkServers="${kafka.zkServers}" topicPrefix="${kafka.topicPrefix}">
-      <producerProperties>
+      <producer>
         <property name="bootstrap.servers">${kafka.bootstrap.servers}</property>
-      </producerProperties>
-      <consumerProperties>
+      </producer>
+      <consumer>
         <property name="bootstrap.servers">${kafka.bootstrap.servers}</property>
         <property name="request.timeout.ms">65000</property>
         <property name="max.poll.interval.ms">60000</property>
-        <property name="session.timeout.ms">30000</property>
-        <property name="heartbeat.interval.ms">2000</property>
-        <!-- We want consumers to handle on event at a time so that
-         one consumer may not take too much records while other
-         are sleeping --> 
-        <property name="max.poll.records">1</property>
-      </consumerProperties>
+        <property name="session.timeout.ms">20000</property>
+        <property name="heartbeat.interval.ms">1000</property>
+        <property name="max.poll.records">50</property>
+      </consumer>
     </kafkaConfig>
+  </extension>
 
+
+  <extension target="org.nuxeo.runtime.stream.service" point="logConfig">
+    <logConfig name="work" type="kafka">
+      <option name="kafkaConfig">default</option>
+    </logConfig>
   </extension>
 
 </component>
