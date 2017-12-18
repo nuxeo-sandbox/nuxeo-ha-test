@@ -1,6 +1,6 @@
 <component name="org.nuxeo.ecm.ha.test.stream.contrib">
   
-  <require>org.nuxeo.ecm.ha.test.kafka.contrib</require>
+  <require>org.nuxeo.stream.defaultConfig</require>
   
   <extension target="org.nuxeo.runtime.stream.service" point="logConfig">
     <logConfig name="work" type="kafka">

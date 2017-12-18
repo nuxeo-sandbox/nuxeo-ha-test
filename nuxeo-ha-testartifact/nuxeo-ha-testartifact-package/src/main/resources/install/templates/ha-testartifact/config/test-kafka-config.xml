@@ -1,4 +1,4 @@
-<component name="org.nuxeo.ecm.ha.test.kafka.contrib">
+<component name="org.nuxeo.stream.defaultConfig">
 
   <extension target="org.nuxeo.runtime.stream.kafka.service" point="kafkaConfig">
     <kafkaConfig name="default" zkServers="${kafka.zkServers}" topicPrefix="${kafka.topicPrefix}">
