@@ -1,6 +1,6 @@
 <component name="org.nuxeo.ecm.ha.test.kafka.contrib">
 
-  <extension target="org.nuxeo.stream.kafka.service" point="kafkaConfig">
+  <extension target="org.nuxeo.runtime.kafka.KafkaConfigService" point="kafkaConfig">
     <kafkaConfig name="default" zkServers="${kafka.zkServers}" topicPrefix="${kafka.topicPrefix}">
       <producer>
         <property name="bootstrap.servers">${kafka.bootstrap.servers}</property>
