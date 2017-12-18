@@ -1,6 +1,6 @@
 <component name="org.nuxeo.ecm.ha.test.kafka.contrib">
 
-  <extension target="org.nuxeo.runtime.kafka.KafkaConfigService" point="kafkaConfig">
+  <extension target="org.nuxeo.runtime.stream.kafka.service" point="kafkaConfig">
     <kafkaConfig name="default" zkServers="${kafka.zkServers}" topicPrefix="${kafka.topicPrefix}">
       <producer>
         <property name="bootstrap.servers">${kafka.bootstrap.servers}</property>
@@ -16,11 +16,5 @@
     </kafkaConfig>
   </extension>
 
-
-  <extension target="org.nuxeo.runtime.stream.service" point="logConfig">
-    <logConfig name="work" type="kafka">
-      <option name="kafkaConfig">default</option>
-    </logConfig>
-  </extension>
 
 </component>
