@@ -15,20 +15,20 @@ import org.nuxeo.runtime.api.Framework;
 
 public class UpdateNoteListener implements EventListener {
 
-    protected final List<String> handled = Arrays.asList("documentCreated");
+  protected final List<String> handled = Arrays.asList("documentCreated");
 
-    @Override
-    public void handleEvent(Event event) {
-        EventContext ctx = event.getContext();
-        if (!(ctx instanceof DocumentEventContext)) {
-            return;
-        }
-
-        DocumentEventContext docCtx = (DocumentEventContext) ctx;
-        DocumentModel doc = docCtx.getSourceDocument();
-        if ("Note".equals(doc.getType())) {
-            Work work = new DocUpdaterWork(doc.getRepositoryName(), doc.getId());
-            Framework.getService(WorkManager.class).schedule(work, Scheduling.IF_NOT_RUNNING_OR_SCHEDULED);
-        }
+  @Override
+  public void handleEvent(Event event) {
+    EventContext ctx = event.getContext();
+    if (!(ctx instanceof DocumentEventContext)) {
+      return;
     }
+
+    DocumentEventContext docCtx = (DocumentEventContext) ctx;
+    DocumentModel doc = docCtx.getSourceDocument();
+    if ("Note".equals(doc.getType())) {
+      Work work = new DocUpdaterWork(doc.getRepositoryName(), doc.getId());
+      Framework.getService(WorkManager.class).schedule(work, Scheduling.IF_NOT_RUNNING_OR_SCHEDULED);
+    }
+  }
 }

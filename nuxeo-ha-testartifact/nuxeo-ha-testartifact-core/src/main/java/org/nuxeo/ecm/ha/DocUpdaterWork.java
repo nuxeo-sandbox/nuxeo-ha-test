@@ -29,45 +29,44 @@ import org.nuxeo.runtime.api.Framework;
  */
 public class DocUpdaterWork extends AbstractWork {
 
+  private static final long serialVersionUID = 1L;
 
-    private static final long serialVersionUID = 1L;
+  public DocUpdaterWork(String repositoryName, String id) {
+    super(id);
+    setDocument(repositoryName, id);
+  }
 
+  @Override
+  public String getCategory() {
+    return "hatest";
+  }
 
+  @Override
+  public String getTitle() {
+    return "ha-test-updater";
+  }
 
-    public DocUpdaterWork(String repositoryName, String id) {
-        super(id);
-        setDocument(repositoryName, id);
+  @Override
+  public void work() {
+    
+    // Sleep up front - race condition with storage backend if doc check is done before sleep
+    // period has completed.
+    try {
+      Thread.sleep(Integer.parseInt(Framework.getProperty("nuxeo.ha.listener.duration", "2000")));
+    } catch (InterruptedException e) {
+      ExceptionUtils.checkInterrupt(e);
     }
 
-    @Override
-    public String getCategory() {
-        return "hatest";
+    openSystemSession();
+
+    IdRef docRef = new IdRef(docId);
+    if (!session.exists(docRef)) {
+      // doc is gone
+      return;
     }
-
-    @Override
-    public String getTitle() {
-        return "ha-test-updater";
-    }
-
-    @Override
-    public void work() {
-        openSystemSession();
-
-        IdRef docRef = new IdRef(docId);
-        if (!session.exists(docRef)) {
-            // doc is gone
-            return;
-        }
-        DocumentModel doc = session.getDocument(docRef);
-        try {
-            Thread.sleep(Integer.parseInt(Framework.getProperty("nuxeo.ha.listener.duration", "2000")));
-            doc.setPropertyValue("dc:description", "updated");
-            session.saveDocument(doc);
-        } catch (InterruptedException e) {
-            ExceptionUtils.checkInterrupt(e);
-        }
-    }
-
-
+    DocumentModel doc = session.getDocument(docRef);
+    doc.setPropertyValue("dc:description", "updated");
+    session.saveDocument(doc);
+  }
 
 }
