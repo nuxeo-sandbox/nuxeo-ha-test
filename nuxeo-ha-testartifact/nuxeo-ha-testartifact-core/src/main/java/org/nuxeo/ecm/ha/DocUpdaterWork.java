@@ -18,9 +18,11 @@
  */
 package org.nuxeo.ecm.ha;
 
-import org.nuxeo.common.utils.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.IdRef;
+import org.nuxeo.ecm.core.api.model.Property;
 import org.nuxeo.ecm.core.work.AbstractWork;
 import org.nuxeo.runtime.api.Framework;
 
@@ -30,6 +32,8 @@ import org.nuxeo.runtime.api.Framework;
 public class DocUpdaterWork extends AbstractWork {
 
   private static final long serialVersionUID = 1L;
+
+  private static final Log log = LogFactory.getLog(DocUpdaterWork.class);
 
   public DocUpdaterWork(String repositoryName, String id) {
     super(id);
@@ -48,23 +52,58 @@ public class DocUpdaterWork extends AbstractWork {
 
   @Override
   public void work() {
-    
-    // Sleep up front - race condition with storage backend if doc check is done before sleep
-    // period has completed.
-    try {
-      Thread.sleep(Integer.parseInt(Framework.getProperty("nuxeo.ha.listener.duration", "2000")));
-    } catch (InterruptedException e) {
-      ExceptionUtils.checkInterrupt(e);
-    }
 
+    // Check parameters (period * rounds) for document existence
+    long checkPeriod = Math.abs(Long.parseLong(Framework.getProperty("nuxeo.ha.listener.checkPeriod", "500")));
+    int checkRounds = Math.abs(Integer.parseInt(Framework.getProperty("nuxeo.ha.listener.checkRounds", "100")));
+
+ // Open session
     openSystemSession();
-
+    
+    // Check document reference
     IdRef docRef = new IdRef(docId);
-    if (!session.exists(docRef)) {
-      // doc is gone
-      return;
+    while (checkRounds-- > 0) {
+      // Open session
+      //openSystemSession();
+      if (!session.exists(docRef)) {
+        if (checkRounds == 0) {
+          // doc does not exist
+          log.error("Document with ID not found: " + docId);
+          return;
+        } else {
+          // Close the session to be opened later
+          //closeSession();
+          
+          // doc has not appeared, wait
+          try {
+            Thread.sleep(checkPeriod);
+          } catch (InterruptedException iex) {
+          }
+        }
+      } else {
+        // Found!
+        break;
+      }
     }
+
+    // Resolve document
     DocumentModel doc = session.getDocument(docRef);
+
+    // Check for configured sleep value
+    Property prop = doc.getProperty("dc:source");
+    String val = prop.getValue(String.class);
+    if (val == null) {
+      val = Framework.getProperty("nuxeo.ha.listener.duration", "1500");
+    }
+
+    // Work delay
+    try {
+      Long delay = Long.parseLong(val);
+      Thread.sleep(delay);
+    } catch (Exception ex) {
+    }
+
+    // Update doc
     doc.setPropertyValue("dc:description", "updated");
     session.saveDocument(doc);
   }

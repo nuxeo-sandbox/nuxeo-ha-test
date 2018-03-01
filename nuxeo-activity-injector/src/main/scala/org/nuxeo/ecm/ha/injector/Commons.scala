@@ -12,6 +12,7 @@ object HaHeader {
   val default = Map(
     "Content-Type" -> "application/json+nxrequest; charset=UTF-8",
     "X-NXCoreIoMarshaller" -> "true",
-    "X-NXDocumentProperties" -> "dublincore")
+    "X-NXDocumentProperties" -> "dublincore, file",
+    "X-NXRepository" -> "default")
 
 }
