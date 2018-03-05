@@ -25,6 +25,9 @@ class HaInjector extends Simulation {
     case "ha" =>
       val chain = scenario("HA/DR").during(myDuration) { exec(CreateCheckDelete.scenario(primary, secondary)) }
       setUp(chain.inject(rampUsers(nbUsers) over (myRamp seconds)))
+    case "cold" =>
+      val chain = scenario("Cold Replication Check").during(myDuration) { exec(ColdReplicationCheck.scenario(primary, secondary)) }
+      setUp(chain.inject(rampUsers(nbUsers) over (myRamp seconds)))
     case "vreset" =>
       val chain = scenario("Vocabulary Reset").repeat(vocabRounds) { exec(VocabularyReset.scenario(primary, secondary)) }
       setUp(chain.inject(rampUsers(nbUsers) over (myRamp seconds)))
