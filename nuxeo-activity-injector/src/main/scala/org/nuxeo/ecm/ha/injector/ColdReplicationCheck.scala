@@ -8,17 +8,17 @@ import scala.util.Random
 
 object ColdReplicationCheck {
 
-  val uidFeeder = csv(System.getProperty("csvInput", "uid_export.csv"))
+  val uidFeeder = csv(System.getProperty("csvInput", "uid_export.csv")).circular
 
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
-      feed(uidFeeder)
+      feed(uidFeeder).feed(HaFeeder.userFeeder)
         .exec { session =>
           session.set("primary", primary)
         }
         .exec(
           http("Step 0.0 - Check test workspace exists")
-            .get(s"${primary}/nuxeo/api/v1/" + "path/default-domain/workspaces/test")
+            .get(s"${primary}/nuxeo/api/v1/path/default-domain/workspaces/test")
             .headers(HaHeader.default)
             .basicAuth("${userId}", "${userId}")
             .check(status.is(200))).exitHereIfFailed
@@ -26,7 +26,7 @@ object ColdReplicationCheck {
       .group("Document Retrieval") {
         exec(
           http("Step 1.1 - Check Document Exists")
-            .get(s"${primary}/nuxeo/api/v1/id/" + "${docId}")
+            .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
             .headers(HaHeader.default)
             .basicAuth("${userId}", "${userId}")
             .check(status.not(500))
