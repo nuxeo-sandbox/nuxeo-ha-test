@@ -12,7 +12,7 @@ class HaInjector extends Simulation {
   val nbUsers = Integer.getInteger("users", 20)
   val myRamp = java.lang.Long.getLong("ramp", 30L)
   val myDuration = java.lang.Long.getLong("duration", 300L)
-  val myEntries = Integer.getInteger("entries", 100000)
+  val myEntries = Integer.getInteger("entries", 3000)
   val simulation = System.getProperty("scenario", "ha")
 
   val httpProtocol = http
