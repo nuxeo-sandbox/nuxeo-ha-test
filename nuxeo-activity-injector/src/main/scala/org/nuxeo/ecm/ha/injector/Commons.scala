@@ -1,10 +1,13 @@
 package org.nuxeo.ecm.ha.injector
 
-import io.gatling.core.Predef._
+import io.gatling.commons.util.LongCounter
 
-object HaFeeder {  
+object HaFeeder {
 
   val userFeeder = Iterator.continually(Map("userId" -> ("Administrator")))
+
+  val idRange = new LongCounter()
+  val idFeeder = Iterator.continually(Map("entryId" -> idRange.incrementAndGet(), "userId" -> ("Administrator")))
 }
 
 object HaHeader {
@@ -16,3 +19,4 @@ object HaHeader {
     "X-NXRepository" -> "default")
 
 }
+

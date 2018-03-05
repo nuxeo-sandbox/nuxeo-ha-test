@@ -4,7 +4,6 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
 import scala.concurrent.duration._
-import java.util.concurrent.ConcurrentLinkedQueue
 
 object CreateCheckDelete {
 
@@ -13,8 +12,8 @@ object CreateCheckDelete {
       feed(HaFeeder.userFeeder)
         .exec { session =>
           session.set("description", null)
-          session.set("primary", primary)
-          session.set("secondary", secondary)
+            .set("primary", primary)
+            .set("secondary", secondary)
         }
         .exec(
           http("Step 0.0 - Check test workspace exists")
@@ -33,7 +32,7 @@ object CreateCheckDelete {
             .check(jsonPath("$.batchId").saveAs("batchId")))
           .exec(
             http("Step 1.2 - Upload Data")
-              .post(s"${primary}/nuxeo/api/v1/upload/" + "${batchId}/0")
+              .post(s"${primary}/nuxeo/api/v1/" + "upload/${batchId}/0")
               .headers(HaHeader.default)
               .header("X-File-Name", "note-${batchId}.txt")
               .header("X-File-Type", "text/plain")
@@ -76,7 +75,7 @@ object CreateCheckDelete {
                   doIf("${description.isUndefined()}") {
                     exec(
                       http("Step 2.0 - Retrieve Async Work")
-                        .get(s"${primary}/nuxeo/api/v1/id/" + "${docId}")
+                        .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
                         .headers(HaHeader.default)
                         .basicAuth("${userId}", "${userId}")
                         .check(status.not(500))
@@ -90,7 +89,7 @@ object CreateCheckDelete {
             pause(50 milliseconds)
               .exec(
                 http("Step 2.1 - Check Metadata")
-                  .get(s"${primary}/nuxeo/api/v1/id/" + "${docId}")
+                  .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
                   .headers(HaHeader.default)
                   .basicAuth("${userId}", "${userId}")
                   .check(status.not(500))
@@ -114,7 +113,7 @@ object CreateCheckDelete {
               pause(10 seconds)
                 .exec(
                   http("Step 4.0 - Check Replicated Document")
-                    .get(s"${secondary}/nuxeo/api/v1/id/" + "${docId}")
+                    .get(s"${secondary}/nuxeo/api/v1/" + "id/${docId}")
                     .headers(HaHeader.default)
                     .basicAuth("${userId}", "${userId}")
                     .check(status.not(500))
@@ -151,7 +150,7 @@ object CreateCheckDelete {
                 pause(10 seconds)
                   .exec(
                     http("Step 5.1 - Check replication deleted")
-                      .get(s"${secondary}/nuxeo/api/v1/id/" + "${docId}")
+                      .get(s"${secondary}/nuxeo/api/v1/" + "id/${docId}")
                       .headers(HaHeader.default)
                       .basicAuth("${userId}", "${userId}")
                       .check(status.not(200)))
