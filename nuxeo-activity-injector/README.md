@@ -8,7 +8,8 @@ That project is basically a gatling test. To execute :
 
 System Properites for HA/DR Test:
 * simulation: Target simulation to run (default: ha)
-  * Options: ha, cold, vreset, vcheck
+  * Options: ace, ha, cold, vreset, vcheck
+  * ace: Access Control Entry test update and remove
   * ha: HA/DR test when both primary and secondary are set
   * cold: Uses 'csvInput' to verify document and binary entries
   * vreset: Reset vocabulary orderings for 'replication' vocabulary to 1
@@ -19,4 +20,4 @@ System Properites for HA/DR Test:
 * ramp: Second to ramp up users (default: 30)
 * duration: Number of seconds to run the simulation (defualt: 300)
 * entries: Number of Vocabulary entries to exercise (default: 3000)
-* csvInput: Full path to CSV Input file (default: uid_export.csv)
+* csv: Full path to CSV Input file (default: uid_export.csv)

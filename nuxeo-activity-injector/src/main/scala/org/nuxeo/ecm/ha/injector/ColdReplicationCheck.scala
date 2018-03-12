@@ -8,7 +8,7 @@ import scala.util.Random
 
 object ColdReplicationCheck {
 
-  val uidFeeder = csv(System.getProperty("csvInput", "uid_export.csv")).circular
+  val uidFeeder = csv(System.getProperty("csv", "uid_export.csv")).circular
 
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
