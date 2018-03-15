@@ -34,4 +34,7 @@ nuxeo-webengine/nuxeo-webengine-gwt/war/
 nashorn_code_cache/
 bower_components
 node_modules
-
+.cache-main
+.cache-tests
+dependency-reduced-pom.xml
+.vscode

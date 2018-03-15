@@ -1,0 +1,48 @@
+{
+  "entity-type": "recordSet",
+  "isPaginable": true,
+  "resultsCount": 375,
+  "pageSize": 10,
+  "maxPageSize": 1000,
+  "currentPageSize": 10,
+  "currentPageIndex": 0,
+  "numberOfPages": 38,
+  "isPreviousPageAvailable": false,
+  "isNextPageAvailable": true,
+  "isLastPageAvailable": true,
+  "isSortable": true,
+  "hasError": false,
+  "errorMessage": null,
+  "entries": [
+    {
+      "ecm:uuid": "2d5a67ec-8475-4a87-91c6-5107bb87ede2"
+    },
+    {
+      "ecm:uuid": "4f9f9968-9aa7-449c-803b-d7219ba1c300"
+    },
+    {
+      "ecm:uuid": "324f454a-aefb-4f66-893a-bc6071558b52"
+    },
+    {
+      "ecm:uuid": "57391989-1ec9-4f1e-abc9-ea4261fb6ade"
+    },
+    {
+      "ecm:uuid": "f588a837-dc56-4814-820f-c905301c3d0f"
+    },
+    {
+      "ecm:uuid": "f0488ef9-35ac-474a-bbc9-326b427af1a5"
+    },
+    {
+      "ecm:uuid": "5e1aff54-a55e-41bc-a8dd-5ab50dcfc16e"
+    },
+    {
+      "ecm:uuid": "ebb2aa09-b496-4920-8fd1-00bf149425ba"
+    },
+    {
+      "ecm:uuid": "fa53adcb-2239-452d-8c40-d152bc33bdcf"
+    },
+    {
+      "ecm:uuid": "01315153-d89e-43cf-a29a-d63463560bb0"
+    }
+  ]
+}
