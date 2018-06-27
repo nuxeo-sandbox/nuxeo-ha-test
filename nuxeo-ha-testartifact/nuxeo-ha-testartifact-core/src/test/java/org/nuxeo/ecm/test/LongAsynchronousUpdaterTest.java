@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.PathRef;
 import org.nuxeo.ecm.core.test.CoreFeature;
 import org.nuxeo.ecm.core.test.DefaultRepositoryInit;
@@ -50,6 +51,7 @@ public class LongAsynchronousUpdaterTest {
     DocumentModel doc = session.createDocumentModel("/", "sample", "Note");
     doc = session.createDocument(doc);
     session.save();
+    assertTrue(session.exists(new IdRef(doc.getId())));
     log.warn("Created document for update: " + doc.getId());
     
     assertNull(doc.getProperty("dc:description").getValue(String.class));
@@ -62,11 +64,12 @@ public class LongAsynchronousUpdaterTest {
   }
   
   @Test
-  public void propertyIsUpdatedAfterDirectedTime() throws Exception {    
+  public void propertyIsUpdatedAfterDirectedTime() throws Exception {   
     DocumentModel doc = session.createDocumentModel("/", "sample", "Note");
     doc.setProperty("dublincore", "source", "1000");
     doc = session.createDocument(doc);
     session.save();
+    assertTrue(session.exists(new IdRef(doc.getId())));
     log.warn("Created document for update: " + doc.getId());
     
     assertNull(doc.getProperty("dc:description").getValue(String.class));

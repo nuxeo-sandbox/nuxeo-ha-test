@@ -31,81 +31,98 @@ import org.nuxeo.runtime.api.Framework;
  */
 public class DocUpdaterWork extends AbstractWork {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private static final Log log = LogFactory.getLog(DocUpdaterWork.class);
+    private static final Log log = LogFactory.getLog(DocUpdaterWork.class);
 
-  public DocUpdaterWork(String repositoryName, String id) {
-    super(id);
-    setDocument(repositoryName, id);
-  }
+    public DocUpdaterWork(String repositoryName, String id) {
+        super(id);
+        setDocument(repositoryName, id);
+    }
 
-  @Override
-  public String getCategory() {
-    return "hatest";
-  }
+    @Override
+    public String getCategory() {
+        return "hatest";
+    }
 
-  @Override
-  public String getTitle() {
-    return "ha-test-updater";
-  }
+    @Override
+    public String getTitle() {
+        return "ha-test-updater";
+    }
 
-  @Override
-  public void work() {
+    @Override
+    public void work() {
+        log.debug("Running update worker for doc: " + docId);
+        // Check parameters (period * rounds) for document existence
+        long checkPeriod = Math.abs(Long.parseLong(Framework.getProperty("nuxeo.ha.listener.checkPeriod", "500")));
+        int checkRounds = Math.abs(Integer.parseInt(Framework.getProperty("nuxeo.ha.listener.checkRounds", "100")));
 
-    // Check parameters (period * rounds) for document existence
-    long checkPeriod = Math.abs(Long.parseLong(Framework.getProperty("nuxeo.ha.listener.checkPeriod", "500")));
-    int checkRounds = Math.abs(Integer.parseInt(Framework.getProperty("nuxeo.ha.listener.checkRounds", "100")));
+        // Open session
+        openSystemSession();
 
- // Open session
-    openSystemSession();
-    
-    // Check document reference
-    IdRef docRef = new IdRef(docId);
-    while (checkRounds-- > 0) {
-      // Open session
-      //openSystemSession();
-      if (!session.exists(docRef)) {
-        if (checkRounds == 0) {
-          // doc does not exist
-          log.error("Document with ID not found: " + docId);
-          return;
-        } else {
-          // Close the session to be opened later
-          //closeSession();
-          
-          // doc has not appeared, wait
-          try {
-            Thread.sleep(checkPeriod);
-          } catch (InterruptedException iex) {
-          }
+        // Check document reference
+        IdRef docRef = new IdRef(docId);
+        while (checkRounds-- > 0) {
+            // Open session
+            log.debug("Checking for existence of doc, round: " + checkRounds);
+            if (!session.exists(docRef)) {
+                if (checkRounds == 0) {
+                    // doc does not exist
+                    log.error("Document with ID not found: " + docId);
+                    return;
+                } else {
+                    // Close the session to be opened later
+                    // closeSession();
+
+                    // doc has not appeared, wait
+                    try {
+                        log.debug("No doc yet @ round " + checkRounds);
+                        commitOrRollbackTransaction();
+                        Thread.sleep(checkPeriod);
+                        startTransaction();
+                    } catch (InterruptedException iex) {
+                        log.error("Interrupted during sleep");
+                    }
+                }
+            } else {
+                // Found!
+                log.debug("Document found!");
+                break;
+            }
         }
-      } else {
-        // Found!
-        break;
-      }
+
+        // Resolve document
+        DocumentModel doc = null;
+        if (session.exists(docRef)) {
+            doc = session.getDocument(docRef);
+            log.debug("Found document: " + docRef);
+        } else {
+            log.warn("No such document: " + docId);
+            return;
+        }
+
+        // Check for configured sleep value
+        Property prop = doc.getProperty("dc:source");
+        String val = prop.getValue(String.class);
+        if (val == null) {
+            val = Framework.getProperty("nuxeo.ha.listener.duration", "1500");
+        }
+
+        // Work delay
+        try {
+            log.debug("Sleeping for ms: " + val);
+            Long delay = Long.parseLong(val);
+            Thread.sleep(delay);
+        } catch (Exception ex) {
+        }
+
+        // Update doc
+        log.debug("Updating document...");
+        doc.setPropertyValue("dc:description", "updated");
+        session.saveDocument(doc);
+        session.save();
+
+        closeSession();
     }
-
-    // Resolve document
-    DocumentModel doc = session.getDocument(docRef);
-
-    // Check for configured sleep value
-    Property prop = doc.getProperty("dc:source");
-    String val = prop.getValue(String.class);
-    if (val == null) {
-      val = Framework.getProperty("nuxeo.ha.listener.duration", "1500");
-    }
-
-    // Work delay
-    try {
-      Long delay = Long.parseLong(val);
-      Thread.sleep(delay);
-    } catch (Exception ex) {
-    }
-
-    // Update doc
-    doc.setPropertyValue("dc:description", "updated");
-    session.saveDocument(doc);
-  }
 
 }

@@ -1,5 +1,7 @@
 package org.nuxeo.ecm.ha;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.event.Event;
 import org.nuxeo.ecm.core.event.EventContext;
@@ -11,20 +13,23 @@ import org.nuxeo.ecm.core.work.api.WorkManager.Scheduling;
 import org.nuxeo.runtime.api.Framework;
 
 public class UpdateNoteListener implements EventListener {
-  
-  @Override
-  public void handleEvent(Event event) {
-    EventContext ctx = event.getContext();
-    if (!(ctx instanceof DocumentEventContext)) {
-      return;
-    }
 
-    String updateType = Framework.getProperty("nuxeo.ha.listener.updateType", "Note");
-    DocumentEventContext docCtx = (DocumentEventContext) ctx;
-    DocumentModel doc = docCtx.getSourceDocument();
-    if (updateType.equals(doc.getType())) {
-      Work work = new DocUpdaterWork(doc.getRepositoryName(), doc.getId());
-      Framework.getService(WorkManager.class).schedule(work, Scheduling.IF_NOT_RUNNING_OR_SCHEDULED);
+    private static final Log log = LogFactory.getLog(DocUpdaterWork.class);
+
+    @Override
+    public void handleEvent(Event event) {
+        EventContext ctx = event.getContext();
+        if (!(ctx instanceof DocumentEventContext)) {
+            return;
+        }
+
+        String updateType = Framework.getProperty("nuxeo.ha.listener.updateType", "Note");
+        DocumentEventContext docCtx = (DocumentEventContext) ctx;
+        DocumentModel doc = docCtx.getSourceDocument();
+        if (updateType.equals(doc.getType())) {
+            log.debug("Performing ASYNC update: " + doc.getId() + "@" + doc.getVersionLabel() + ", " + event.getName());
+            Work work = new DocUpdaterWork(doc.getRepositoryName(), doc.getId());
+            Framework.getService(WorkManager.class).schedule(work, Scheduling.IF_NOT_RUNNING_OR_SCHEDULED);
+        }
     }
-  }
 }
