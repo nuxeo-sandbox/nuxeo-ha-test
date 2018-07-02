@@ -7,6 +7,8 @@ import scala.concurrent.duration._
 
 object VocabularyReset {
 
+  val vocabulary = sys.props.getOrElse("vocabulary", "retention")
+
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
       feed(HaFeeder.idFeeder)
@@ -14,14 +16,14 @@ object VocabularyReset {
           session.remove("foundId")
             .set("primary", primary)
             .set("secondary", secondary)
-            .set("vocabulary", "replication")
+            .set("vocabulary", s"${vocabulary}")
         }
         .doIf("${vocabFound.isUndefined()}") {
           exec(
             http("Step 0.0 - Check Vocabulary")
               .get(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}/0")
               .headers(HaHeader.default)
-              .basicAuth("${userId}", "${userId}")
+              .basicAuth("${userId}", "${userPass}")
               .check(status.is(200))).exitHereIfFailed
             .exec { session => session.set("vocabFound", true) }
         }
@@ -32,7 +34,7 @@ object VocabularyReset {
             http("Step 1.0 - Get Entry")
               .get(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}/${entryId}")
               .headers(HaHeader.default)
-              .basicAuth("${userId}", "${userId}")
+              .basicAuth("${userId}", "${userPass}")
               .check(jsonPath("$.properties.id").optional.saveAs("foundId")))
         }
           .doIfOrElse("${foundId.isUndefined()}")(
@@ -40,7 +42,7 @@ object VocabularyReset {
               http("Step 1.1.1 - Create Entry")
                 .post(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}")
                 .headers(HaHeader.default)
-                .basicAuth("${userId}", "${userId}")
+                .basicAuth("${userId}", "${userPass}")
                 .body(StringBody("""
                 {
                   "entity-type": "directoryEntry",
@@ -56,7 +58,7 @@ object VocabularyReset {
                 http("Step 1.1.2 - Update Entry")
                   .put(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}/${entryId}")
                   .headers(HaHeader.default)
-                  .basicAuth("${userId}", "${userId}")
+                  .basicAuth("${userId}", "${userPass}")
                   .body(StringBody("""
                 {
                   "entity-type": "directoryEntry",

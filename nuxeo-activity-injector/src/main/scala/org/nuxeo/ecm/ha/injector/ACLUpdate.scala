@@ -7,7 +7,7 @@ import scala.concurrent.duration._
 
 object ACLUpdate {
 
-  val uidFeeder = csv(System.getProperty("csv", "uid_export.csv")).circular
+  val uidFeeder = csv(sys.props.getOrElse("csv", "uid_export.csv")).circular
 
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
@@ -20,7 +20,7 @@ object ACLUpdate {
           http("Step 0.0 - Check test workspace exists")
             .get(s"${primary}/nuxeo/api/v1/path/default-domain/workspaces/test")
             .headers(HaHeader.default)
-            .basicAuth("${userId}", "${userId}")
+            .basicAuth("${userId}", "${userPass}")
             .check(status.is(200))).exitHereIfFailed
     }
       .group("Update ACE") {
@@ -29,14 +29,14 @@ object ACLUpdate {
             .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
             .headers(HaHeader.default)
             .header("enrichers.document", "document,acls")
-            .basicAuth("${userId}", "${userId}")
+            .basicAuth("${userId}", "${userPass}")
             .check(status.is(200)))
           .exec(
             http("Step 1.1 - Update Access Control Entry")
               .post(s"${primary}/nuxeo/site/automation/Document.AddPermission")
               .headers(HaHeader.default)
               .header("enrichers.document", "document,acls")
-              .basicAuth("${userId}", "${userId}")
+              .basicAuth("${userId}", "${userPass}")
               .body(StringBody("""
                 {"params":
                   {"permission":"Everything","acl":"local","username":"members"},
@@ -48,7 +48,7 @@ object ACLUpdate {
               .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
               .headers(HaHeader.default)
               .header("enrichers.document", "document,acls")
-              .basicAuth("${userId}", "${userId}")
+              .basicAuth("${userId}", "${userPass}")
               .check(status.not(500))
               .check(status.not(504))
               .check(jsonPath("$.contextParameters.acls[*].aces[*].id").is("members:Everything:true:Administrator::")))
@@ -63,7 +63,7 @@ object ACLUpdate {
                     .get(s"${secondary}/nuxeo/api/v1/" + "id/${docId}")
                     .headers(HaHeader.default)
                     .header("enrichers.document", "document,acls")
-                    .basicAuth("${userId}", "${userId}")
+                    .basicAuth("${userId}", "${userPass}")
                     .check(status.not(500))
                     .check(status.not(504))
                     .check(jsonPath("$.contextParameters.acls[*].aces[*].id").is("members:Everything:true:Administrator::")))
@@ -76,14 +76,14 @@ object ACLUpdate {
             .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
             .headers(HaHeader.default)
             .header("enrichers.document", "document,acls")
-            .basicAuth("${userId}", "${userId}")
+            .basicAuth("${userId}", "${userPass}")
             .check(status.is(200)))
           .exec(
             http("Step 3.1 - Remove Access Control Entry")
               .post(s"${primary}/nuxeo/site/automation/Document.RemovePermission")
               .headers(HaHeader.default)
               .header("enrichers.document", "document,acls")
-              .basicAuth("${userId}", "${userId}")
+              .basicAuth("${userId}", "${userPass}")
               .body(StringBody("""
                 {"params":
                   {"id":"members:Everything:true:Administrator::"},
@@ -95,7 +95,7 @@ object ACLUpdate {
               .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
               .headers(HaHeader.default)
               .header("enrichers.document", "document,acls")
-              .basicAuth("${userId}", "${userId}")
+              .basicAuth("${userId}", "${userPass}")
               .check(status.not(500))
               .check(status.not(504))
               .check(jsonPath("$.contextParameters.acls[*].aces[*].id").not("members:Everything:true:Administrator::")))
@@ -110,7 +110,7 @@ object ACLUpdate {
                     .get(s"${secondary}/nuxeo/api/v1/" + "id/${docId}")
                     .headers(HaHeader.default)
                     .header("enrichers.document", "document,acls")
-                    .basicAuth("${userId}", "${userId}")
+                    .basicAuth("${userId}", "${userPass}")
                     .check(status.not(500))
                     .check(status.not(504))
                     .check(jsonPath("$.contextParameters.acls[*].aces[*].id").not("members:Everything:true:Administrator::")))

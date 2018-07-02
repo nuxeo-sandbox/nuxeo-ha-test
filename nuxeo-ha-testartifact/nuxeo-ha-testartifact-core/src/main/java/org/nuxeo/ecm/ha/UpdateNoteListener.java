@@ -29,7 +29,7 @@ public class UpdateNoteListener implements EventListener {
         if (updateType.equals(doc.getType())) {
             log.debug("Performing ASYNC update: " + doc.getId() + "@" + doc.getVersionLabel() + ", " + event.getName());
             Work work = new DocUpdaterWork(doc.getRepositoryName(), doc.getId());
-            Framework.getService(WorkManager.class).schedule(work, Scheduling.IF_NOT_RUNNING_OR_SCHEDULED);
+            Framework.getService(WorkManager.class).schedule(work, Scheduling.ENQUEUE, true);
         }
     }
 }

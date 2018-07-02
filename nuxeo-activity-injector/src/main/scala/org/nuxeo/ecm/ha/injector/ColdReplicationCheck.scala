@@ -8,7 +8,7 @@ import scala.util.Random
 
 object ColdReplicationCheck {
 
-  val uidFeeder = csv(System.getProperty("csv", "uid_export.csv")).circular
+  val uidFeeder = csv(sys.props.getOrElse("csv", "uid_export.csv")).circular
 
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
@@ -20,7 +20,7 @@ object ColdReplicationCheck {
           http("Step 0.0 - Check test workspace exists")
             .get(s"${primary}/nuxeo/api/v1/path/default-domain/workspaces/test")
             .headers(HaHeader.default)
-            .basicAuth("${userId}", "${userId}")
+            .basicAuth("${userId}", "${userPass}")
             .check(status.is(200))).exitHereIfFailed
     }
       .group("Document Retrieval") {
@@ -28,7 +28,7 @@ object ColdReplicationCheck {
           http("Step 1.1 - Check Document Exists")
             .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
             .headers(HaHeader.default)
-            .basicAuth("${userId}", "${userId}")
+            .basicAuth("${userId}", "${userPass}")
             .check(status.not(500))
             .check(status.not(504))
             .check(jsonPath("$.properties['file:content'].digest").optional.saveAs("digest")))
@@ -37,7 +37,7 @@ object ColdReplicationCheck {
               http("Step 1.2 - Verify Binary Presence")
                 .post(s"${primary}/nuxeo/site/automation/Blob.VerifyBinaryHash")
                 .headers(HaHeader.default)
-                .basicAuth("${userId}", "${userId}")
+                .basicAuth("${userId}", "${userPass}")
                 .body(StringBody("""{"params":{"digest":"${digest}"},"context":{}}""")).asJSON
                 .check(status.is(200))
                 .check(jsonPath("$.value").is("${digest}"))
@@ -49,7 +49,7 @@ object ColdReplicationCheck {
                 http("Step 1.3 - Check Index")
                   .post(s"${primary}/nuxeo/site/es/nuxeo/_search")
                   .headers(HaHeader.default)
-                  .basicAuth("${userId}", "${userId}")
+                  .basicAuth("${userId}", "${userPass}")
                   .body(StringBody("""{ "_source": ["ecm:uuid", "ecm:title"], "query": { "match": { "ecm:uuid": "${docId}" } } }""")).asJSON
                   .check(jsonPath("$.hits.total").is("1")))
           }

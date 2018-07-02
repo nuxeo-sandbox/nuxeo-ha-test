@@ -7,21 +7,22 @@ import scala.util.Random
 
 class HaInjector extends Simulation {
 
-  val primary = System.getProperty("primary", "http://nuxeo.apps.io.nuxeo.com")
-  val secondary = System.getProperty("secondary", null)
+  val primary = sys.props.getOrElse("primary", "https://nuxeo.apps.prod.nuxeo.io")
+  val secondary = sys.props.getOrElse("secondary", null)
   val nbUsers = Integer.getInteger("users", 20)
   val myRamp = java.lang.Long.getLong("ramp", 30L)
   val myDuration = java.lang.Long.getLong("duration", 300L)
   val myEntries = Integer.getInteger("entries", 3000)
-  val simulation = System.getProperty("scenario", "ha")
+  val simulation = sys.props.getOrElse("scenario", "ha")
+  println(s"URL: ${primary}; Simulation: ${simulation}")
 
   val httpProtocol = http
     .baseURL(primary)
     .acceptEncodingHeader("gzip,deflate")
     .userAgentHeader("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:35.0) Gecko/20100101 Firefox/35.0")
 
-  val vocabRounds = (myEntries.div(nbUsers)).toInt 
-  
+  val vocabRounds = (myEntries.div(nbUsers)).toInt
+
   val selected = simulation match {
     case "ace" =>
       val chain = scenario("ACE Replication Check").during(myDuration) { exec(ACLUpdate.scenario(primary, secondary)) }

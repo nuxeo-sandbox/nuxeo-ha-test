@@ -4,10 +4,13 @@ import io.gatling.commons.util.LongCounter
 
 object HaFeeder {
 
-  val userFeeder = Iterator.continually(Map("userId" -> ("Administrator")))
+  val userPass = sys.props.getOrElse("password", "Administrator")
+  val userName = sys.props.getOrElse("user", "Administrator")
+  println(s"User: ${userName}:${userPass}")
+  val userFeeder = Iterator.continually(Map("userId" -> (s"${userName}"), "userPass" -> (s"${userPass}")))
 
   val idRange = new LongCounter()
-  val idFeeder = Iterator.continually(Map("entryId" -> idRange.incrementAndGet(), "userId" -> ("Administrator")))
+  val idFeeder = Iterator.continually(Map("entryId" -> idRange.incrementAndGet(), "userId" -> (s"${userName}"), "userPass" -> (s"${userPass}")))
 }
 
 object HaHeader {
