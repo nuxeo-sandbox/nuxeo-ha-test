@@ -57,6 +57,7 @@ items:
         labels:
           app: nuxeo
       spec:
+        serviceAccountName: chaos-monkey
         containers:
         - imagePullPolicy: Always
           name: chaos-build
