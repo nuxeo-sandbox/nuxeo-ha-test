@@ -1,86 +1,88 @@
 apiVersion: v1
-kind: ImageStream
-metadata:          
-  name: chaos-build
-  labels:
-    app: nuxeo
-
-
----
-
-apiVersion: v1
-kind: BuildConfig
-metadata:
-  name: chaos-build
-  labels:
-    app: nuxeo    
-spec:
-  source:
-    type: Git
-    git:
-      uri: https://github.com/nuxeo-sandbox/nuxeo-ha-test
-      ref: master  
-      contextDir: /k8s-chaos-monkey    
-  strategy:
-    dockerStrategy:
-      forcePull: true
-      from:
-        kind: DockerImage
-        name: golang:onbuild
-    type: Docker
-  output:
-    to:
-      kind: ImageStreamTag
-      name: 'chaos-monkey:latest'
-
----
-
-kind: ConfigMap
-metadata:
-  name: chaos-monkey-config
-  labels:
-    app: nuxeo
-apiVersion: v1
-data:
-  label-selector: component=nuxeo
-  killperiod: "120"
-
-
----
-
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: chaos-monkey
-  labels:
-    app: nuxeo
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: nuxeo        
-    spec:
-      serviceAccountName: chaos-monkey
-      containers:
-      - name: chaos-monkey       
-        image: chaos-monkey:latest
-        imagePullPolicy: Always
-        env:
-        - name: K8SMONKEY_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: "K8SMONKEY_LABEL_SELECTOR"
-          valueFrom: 
-            configMapKeyRef:
-              name: chaos-monkey-config
-              key: label-selector
-
-        - name: "K8SMONKEY_KILLPERIOD"
-          valueFrom: 
-            configMapKeyRef:
-              name: chaos-monkey-config
-              key: killperiod
-        
-        
+kind: List
+items:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: chaos-monkey
+- apiVersion: v1
+  kind: ImageStream
+  metadata:          
+    name: chaos-build
+    labels:
+      app: nuxeo
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: chaos-build
+    labels:
+      app: nuxeo
+  spec:
+    source:
+      type: Git
+      git:
+        uri: https://github.com/nuxeo-sandbox/nuxeo-ha-test
+        ref: master
+      contextDir: /k8s-chaos-monkey
+    strategy:
+      dockerStrategy:
+        forcePull: true
+        from:
+          kind: DockerImage
+          name: golang:onbuild
+      type: Docker
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'chaos-build:latest'
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: chaos-monkey-config
+    labels:
+      app: nuxeo
+  data:
+    label-selector: component=nuxeo
+    killperiod: "120"
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: nuxeo
+    name: chaos-monkey
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: nuxeo
+      spec:
+        containers:
+        - imagePullPolicy: Always
+          name: chaos-build
+          env:
+          - name: K8SMONKEY_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: "K8SMONKEY_LABEL_SELECTOR"
+            valueFrom: 
+              configMapKeyRef:
+                name: chaos-monkey-config
+                key: label-selector
+          - name: "K8SMONKEY_KILLPERIOD"
+            valueFrom: 
+              configMapKeyRef:
+                name: chaos-monkey-config
+                key: killperiod
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - chaos-build
+        from:
+          kind: ImageStreamTag
+          name: chaos-build:latest
+      type: ImageChange

@@ -38,3 +38,4 @@ node_modules
 .cache-tests
 dependency-reduced-pom.xml
 .vscode
+.factorypath
