@@ -1,6 +1,6 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
 <package type="addon" name="ha-testartifact" version="@VERSION@">
-  <title>Nuxeo rolling upgrade test</title>
+  <title>Nuxeo HA Test Functions</title>
   <description>
     <p>Put here an HTML description of your Nuxeo Package.</p>
   </description>
