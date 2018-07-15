@@ -3,7 +3,7 @@
 
   <extension target="org.nuxeo.ecm.core.event.EventServiceComponent" point="listener">
     <listener async="true" postCommit="true" name="updatenotelistener"
-      class="org.nuxeo.ecm.ha.UpdateNoteListener">
+      class="org.nuxeo.ecm.ha.UpdateNoteListener" retryCount="3">
         <event>documentCreated</event>
     </listener>
   </extension>

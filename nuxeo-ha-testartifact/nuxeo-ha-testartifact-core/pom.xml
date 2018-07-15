@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.nuxeo.ecm.test</groupId>
     <artifactId>nuxeo-ha-testartifact-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>nuxeo-ha-testartifact-core</artifactId>
   <name>Nuxeo rolling upgrade test core</name>

@@ -3,7 +3,7 @@
     <queue id="ha-test">
       <name>Queue for HA test</name>
       <!-- Same number of threads than user for the test -->
-      <maxThreads>10</maxThreads>
+      <maxThreads>30</maxThreads>
       <category>hatest</category>
       <!-- clear completed work instances older than 10 minutes -->
       <clearCompletedAfterSeconds>600</clearCompletedAfterSeconds>
