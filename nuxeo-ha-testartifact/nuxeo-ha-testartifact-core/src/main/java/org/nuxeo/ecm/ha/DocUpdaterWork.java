@@ -121,8 +121,6 @@ public class DocUpdaterWork extends AbstractWork {
         doc.setPropertyValue("dc:description", "updated");
         session.saveDocument(doc);
         session.save();
-
-        closeSession();
     }
 
 }

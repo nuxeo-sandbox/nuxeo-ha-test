@@ -18,7 +18,6 @@
   <category name="org.nuxeo.ecm.ha">
     <!-- <priority value="TRACE"/> -->
     <priority value="DEBUG"/>
-    <appender-ref ref="CONSOLE"/>
   </category>
   <root>
     <priority value="WARN" />
