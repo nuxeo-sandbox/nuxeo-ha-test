@@ -18,6 +18,10 @@ The `nuxeo-activity-injector` is a collection of [Gatling](https://gatling.io/do
 
 The go script will use the infrastructure APIs to cause failures in the underlying services.
 
+## Execution Plan
+
+Deploy the Nuxeo platform and associated backing services on a Kubernetes or OpenShift cluster.  Include nuxeo-ha-testartifact marketplace package within Nuxeo platform.  Execute Gatling scenarios to develop baseline.  Introduce chaos monkey to cause failures with various components in your deployment.
+
 ## Expected results
 
 Validate Nuxeo resilience.  The Gatling tests should not experience any fatal failures.
@@ -29,10 +33,6 @@ Validate Nuxeo resilience.  The Gatling tests should not experience any fatal fa
 These solutions are provided for inspiration and we encourage customers to use them as code samples and learning resources.
 
 This is a moving project (no API maintenance, no deprecation process, etc.) If any of these solutions are found to be useful for the Nuxeo Platform in general, they will be integrated directly into platform, not maintained here.
-
-## Execution Plan
-
-Deploy the Nuxeo platform and associated backing services on a Kubernetes or OpenShift cluster.  Include nuxeo-ha-testartifact marketplace package within Nuxeo platform.  Execute Gatling scenarios to develop baseline.  Introduce chaos monkey to cause failures with various components in your deployment.
 
 ## Licensing
 
