@@ -1,6 +1,6 @@
 # Nuxeo Activity Injector
 
-This project is a collection of Gatling scripts that produce load on the target Nuxeo cluster.
+This project is a collection of Gatling scripts that produce load on the target Nuxeo cluster.  See the `utils` sub-directory for a set of companion scripts.
 
 ## Configuration
 
