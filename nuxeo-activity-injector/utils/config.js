@@ -64,18 +64,6 @@ const config = convict({
     env: 'TARGET_TEST',
     arg: 'test',
   },
-  db: {
-    host: {
-      doc: 'Database host name/IP',
-      format: '*',
-      default: 'server1.dev.test',
-    },
-    name: {
-      doc: 'Database name',
-      format: String,
-      default: 'users',
-    },
-  },
 });
 
 // Load environment dependent configuration

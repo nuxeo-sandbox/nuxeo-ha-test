@@ -19,12 +19,13 @@ package monkey
 
 import (
 	"context"
+	"math/rand"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"math/rand"
-	"time"
 )
 
 //Conf contains the configuration for the monkey
@@ -83,6 +84,11 @@ func getK8sClient() (*kubernetes.Clientset, error) {
 
 func killPod(clientset *kubernetes.Clientset) {
 	podAPI := clientset.CoreV1().Pods(conf.NameSpace)
+	/*opts := metav1.ListOptions{}
+	if conf.IncludeLabelSelector != nil {
+		opts.LabelSelector = conf.IncludeLabelSelector
+	}
+	pods, err := podAPI.List(opts) */
 	pods, err := podAPI.List(metav1.ListOptions{LabelSelector: conf.IncludeLabelSelector})
 	if err != nil {
 		log.Errorf("Unable to get list of pods: %s", err.Error())
