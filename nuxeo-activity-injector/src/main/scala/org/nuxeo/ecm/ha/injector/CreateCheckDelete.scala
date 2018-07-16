@@ -13,16 +13,7 @@ object CreateCheckDelete {
 
   val indexCheck = (sys.props.getOrElse("index", "true") equalsIgnoreCase "true")
   val deleteDoc = (sys.props.getOrElse("delete", "true") equalsIgnoreCase "true")
-
-  def md5HashString(s: String): String = {
-    import java.security.MessageDigest
-    import java.math.BigInteger
-    val md = MessageDigest.getInstance("MD5")
-    val digest = md.digest(s.getBytes)
-    val bigInt = new BigInteger(1, digest)
-    val hashedString = bigInt.toString(16)
-    hashedString
-  }
+  val checkUpdate = (sys.props.getOrElse("checkUpdate", "true") equalsIgnoreCase "true")
 
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
@@ -67,6 +58,7 @@ object CreateCheckDelete {
                 "name":"newdoc",
                 "properties":{
                   "dc:title":"note-${batchId}",
+                  "dc:source":"2",
                   "file:content": {
                     "upload-batch":"${batchId}",
                     "upload-fileId":"0"
@@ -85,46 +77,48 @@ object CreateCheckDelete {
             }
           }
       }
-      .group("Asynchronous Update") {
-        pause(3 seconds)
-          .tryMax(5) {
-            pause(10 milliseconds)
-              .exec(
-                repeat(10) {
-                  doIf("${description.isUndefined()}") {
-                    exec(
-                      http("Step 2.0 - Retrieve Async Work")
-                        .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
-                        .headers(HaHeader.default)
-                        .basicAuth("${userId}", "${userPass}")
-                        .check(status.not(500))
-                        .check(status.not(504))
-                        .check(jsonPath("$['properties']['dc:description']").optional.saveAs("description")))
-                      .pause(2 seconds)
-                  }
-                })
-          }
-          .tryMax(5) {
-            pause(50 milliseconds)
-              .exec(
-                http("Step 2.1 - Check Metadata")
-                  .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
-                  .headers(HaHeader.default)
-                  .basicAuth("${userId}", "${userPass}")
-                  .check(status.not(500))
-                  .check(status.not(504))
-                  .check(jsonPath("$.properties['file:content'].digest").saveAs("digest"))
-                  .check(jsonPath("$['properties']['dc:description']").is("updated")))
-              .exec(
-                http("Step 2.2 - Verify Binary Presence")
-                  .post(s"${primary}/nuxeo/site/automation/Blob.VerifyBinaryHash")
-                  .headers(HaHeader.default)
-                  .basicAuth("${userId}", "${userPass}")
-                  .body(StringBody("""{"params":{"digest":"${digest}"},"context":{}}""")).asJSON
-                  .check(status.is(200))
-                  .check(jsonPath("$.value").is("${digest}")))
+      .doIf(checkUpdate) {
+        group("Asynchronous Update") {
+          pause(1 seconds)
+            .tryMax(10) {
+              pause(1 seconds)
+                .exec(
+                  repeat(10) {
+                    doIf("${description.isUndefined()}") {
+                      exec(
+                        http("Step 2.0 - Retrieve Async Work")
+                          .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
+                          .headers(HaHeader.default)
+                          .basicAuth("${userId}", "${userPass}")
+                          .check(status.not(500))
+                          .check(status.not(504))
+                          .check(jsonPath("$['properties']['dc:description']").optional.saveAs("description")))
+                        .pause(2 seconds)
+                    }
+                  })
+            }
+            .tryMax(5) {
+              pause(1 seconds)
+                .exec(
+                  http("Step 2.1 - Check Metadata")
+                    .get(s"${primary}/nuxeo/api/v1/" + "id/${docId}")
+                    .headers(HaHeader.default)
+                    .basicAuth("${userId}", "${userPass}")
+                    .check(status.not(500))
+                    .check(status.not(504))
+                    .check(jsonPath("$.properties['file:content'].digest").saveAs("digest"))
+                    .check(jsonPath("$['properties']['dc:description']").is("updated")))
+                .exec(
+                  http("Step 2.2 - Verify Binary Presence")
+                    .post(s"${primary}/nuxeo/site/automation/Blob.VerifyBinaryHash")
+                    .headers(HaHeader.default)
+                    .basicAuth("${userId}", "${userPass}")
+                    .body(StringBody("""{"params":{"digest":"${digest}"},"context":{}}""")).asJSON
+                    .check(status.is(200))
+                    .check(jsonPath("$.value").is("${digest}")))
 
-          }
+            }
+        }
       }
       .doIf("${secondary.exists()}") {
         group("Check Replicated Document") {
@@ -161,11 +155,14 @@ object CreateCheckDelete {
       }
       .doIf(deleteDoc) {
         group("Document Cleanup") {
-          exec(
-            http("Step 5.0 - Delete document")
-              .delete(s"${primary}/nuxeo/api/v1/id/" + "${docId}")
-              .headers(HaHeader.default)
-              .basicAuth("${userId}", "${userPass}"))
+          tryMax(1) {
+            exec(
+              http("Step 5.0 - Delete document")
+                .delete(s"${primary}/nuxeo/api/v1/id/" + "${docId}")
+                .headers(HaHeader.default)
+                .basicAuth("${userId}", "${userPass}")
+                .check(status.is(204)))
+          }
             .doIf("${secondary.exists()}") {
               pause(5 seconds)
                 .tryMax(7) {

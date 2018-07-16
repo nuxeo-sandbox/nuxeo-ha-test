@@ -9,6 +9,7 @@ import scala.util.Random
 object ColdReplicationCheck {
 
   val uidFeeder = csv(sys.props.getOrElse("csv", "uid_export.csv")).circular
+  val indexCheck = (sys.props.getOrElse("index", "true") equalsIgnoreCase "true")
 
   val scenario = (primary: String, secondary: String) => {
     group("Preconditions") {
@@ -43,15 +44,17 @@ object ColdReplicationCheck {
                 .check(jsonPath("$.value").is("${digest}"))
                 .check(jsonPath("$.value").is("${hash}")))
           }
-          .tryMax(5) {
-            pause(2 seconds)
-              .exec(
-                http("Step 1.3 - Check Index")
-                  .post(s"${primary}/nuxeo/site/es/nuxeo/_search")
-                  .headers(HaHeader.default)
-                  .basicAuth("${userId}", "${userPass}")
-                  .body(StringBody("""{ "_source": ["ecm:uuid", "ecm:title"], "query": { "match": { "ecm:uuid": "${docId}" } } }""")).asJSON
-                  .check(jsonPath("$.hits.total").is("1")))
+          .doIf(indexCheck) {
+            tryMax(5) {
+              pause(2 seconds)
+                .exec(
+                  http("Step 1.3 - Check Index")
+                    .post(s"${primary}/nuxeo/site/es/nuxeo/_search")
+                    .headers(HaHeader.default)
+                    .basicAuth("${userId}", "${userPass}")
+                    .body(StringBody("""{ "_source": ["ecm:uuid", "ecm:title"], "query": { "match": { "ecm:uuid": "${docId}" } } }""")).asJSON
+                    .check(jsonPath("$.hits.total").is("1")))
+            }
           }
       }
   }

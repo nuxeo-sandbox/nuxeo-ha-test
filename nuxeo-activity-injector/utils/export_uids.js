@@ -41,9 +41,12 @@ function pageExec(client, output, pageIdx, numberOfPages, callback) {
     .execute()
     .then((pdoc) => {
       pdoc.entries.forEach((element) => {
-        output.write(`${element['ecm:uuid']},${element['file:content/data']}\n`);
+        output.write(`${element['ecm:uuid']},${element['content/data']}\n`);
       });
-      console.log(colors.green(`Page ${pageIdx} retreived.`));
+      console.log(colors.green(`Page ${pageIdx + 1} retreived.`));
+      if (pageIdx + 1 < numberOfPages) {
+        pageExec(connect.primary, output, pageIdx + 1, numberOfPages, callback);
+      }
     })
     .then(callback)
     .catch((err2) => {
@@ -63,14 +66,13 @@ connect.primary.operation('Repository.ResultSetPageProvider')
   .then((doc) => {
     console.log(colors.green(`Retrieved first page, writing ${doc.resultsCount} record(s).`));
     doc.entries.forEach((element) => {
-      wstream.write(`${element['ecm:uuid']},${element['file:content/data']}\n`);
+      wstream.write(`${element['ecm:uuid']},${element['content/data']}\n`);
     });
     if (doc.isNextPageAvailable) {
-      let pageIdx = 1;
       const callback = closeQuery(doc.numberOfPages - 1);
-      for (; pageIdx < doc.numberOfPages; pageIdx += 1) {
-        pageExec(connect.primary, wstream, pageIdx, doc.numberOfPages, callback);
-      }
+      //for (; pageIdx < doc.numberOfPages; pageIdx += 1) {
+      pageExec(connect.primary, wstream, 1, doc.numberOfPages, callback);
+      //}
     }
   })
   .catch((error) => {

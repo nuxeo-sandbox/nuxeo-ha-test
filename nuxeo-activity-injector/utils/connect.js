@@ -5,8 +5,8 @@ exports.primary = new Nuxeo({
   baseURL: `${Config.get('primary')}/nuxeo/`,
   auth: {
     method: 'basic',
-    username: 'Administrator',
-    password: 'Administrator',
+    username: `${Config.get('username')}`,
+    password: `${Config.get('password')}`,
   },
 });
 
@@ -14,8 +14,8 @@ exports.secondary = new Nuxeo({
   baseURL: `${Config.get('secondary')}/nuxeo/`,
   auth: {
     method: 'basic',
-    username: 'Administrator',
-    password: 'Administrator',
+    username: `${Config.get('username')}`,
+    password: `${Config.get('password')}`,
   },
 });
 

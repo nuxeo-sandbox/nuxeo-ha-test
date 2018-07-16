@@ -22,6 +22,20 @@ const config = convict({
     env: 'SECONDARY_URL',
     arg: 'secondary',
   },
+  username: {
+    doc: 'Username.',
+    format: String,
+    default: 'Administrator',
+    env: 'USERNAME',
+    arg: 'username',
+  },
+  password: {
+    doc: 'Password.',
+    format: String,
+    default: 'Administrator',
+    env: 'PASSWORD',
+    arg: 'password',
+  },
   all: {
     doc: 'Use all records, not just those with binaries.',
     format: 'Boolean',

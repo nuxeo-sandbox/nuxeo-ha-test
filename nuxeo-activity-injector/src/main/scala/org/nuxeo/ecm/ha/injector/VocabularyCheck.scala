@@ -17,6 +17,7 @@ object VocabularyCheck {
             .set("primary", primary)
             .set("secondary", secondary)
             .set("vocabulary", s"${vocabulary}")
+            .set("ordering", 1)
         }
         .exec(
           http("Step 0.0 - Check Vocabulary")
@@ -26,6 +27,7 @@ object VocabularyCheck {
             .check(status.is(200))).exitHereIfFailed
     }
       .group("Vocabulary Update") {
+        tryMax(1) {
         exec(
           http("Step 1.0 - Check Entry")
             .get(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}/${entryId}")
@@ -33,7 +35,8 @@ object VocabularyCheck {
             .basicAuth("${userId}", "${userPass}")
             .check(status.is(200))
             .check(jsonPath("$.properties.ordering").saveAs("ordering")))
-          .exec(
+        }
+          exec(
             http("Step 1.1 - Update Entry")
               .put(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}/${entryId}")
               .headers(HaHeader.default)

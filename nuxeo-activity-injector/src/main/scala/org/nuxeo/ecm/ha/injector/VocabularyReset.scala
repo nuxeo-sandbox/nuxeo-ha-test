@@ -29,7 +29,7 @@ object VocabularyReset {
         }
     }
       .group("Vocabulary Reset") {
-        tryMax(2) {
+        tryMax(1) {
           exec(
             http("Step 1.0 - Get Entry")
               .get(s"${primary}/nuxeo/api/v1/" + "directory/${vocabulary}/${entryId}")
