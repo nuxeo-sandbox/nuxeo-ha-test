@@ -1,4 +1,5 @@
 const convict = require('convict');
+convict.addFormat(require('convict-format-with-validator').url);
 
 // Define a schema
 const config = convict({

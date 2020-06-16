@@ -3,7 +3,7 @@ const colors = require('colors/safe');
 const fs = require('fs');
 
 
-const allQuery = "SELECT ecm:uuid, file:content/data FROM Document WHERE ecm:mixinType != 'HiddenInNavigation' " +
+const allQuery = "SELECT * FROM Document WHERE ecm:mixinType != 'HiddenInNavigation' " +
   " AND ecm:isProxy = 0 AND ecm:isCheckedInVersion = 0 AND ecm:currentLifeCycleState != 'deleted'";
 const fileQuery = `${allQuery} AND file:content/data IS NOT NULL`;
 const queryPageSize = connect.Config.get('pageSize');
@@ -31,7 +31,7 @@ function closeQuery(pageCount) {
 
 function pageExec(client, output, pageIdx, numberOfPages, callback) {
   console.log(colors.yellow(`Getting page ${pageIdx + 1} of ${numberOfPages}`));
-  return client.operation('Repository.ResultSetPageProvider')
+  return client.operation('Repository.Query')
     .params({
       query: execQuery,
       language: 'NXQL',
@@ -40,10 +40,16 @@ function pageExec(client, output, pageIdx, numberOfPages, callback) {
     })
     .execute()
     .then((pdoc) => {
-      pdoc.entries.forEach((element) => {
-        output.write(`${element['ecm:uuid']},${element['content/data']}\n`);
+      pdoc.entries.forEach((doc) => {
+        let fc = doc.properties;
+        if (fc['file:content']) {
+          fc = fc['file:content'].digest;
+        } else {
+          fc = '';
+        }
+        output.write(`${doc.uid},${fc}\n`);
       });
-      console.log(colors.green(`Page ${pageIdx + 1} retreived.`));
+      console.log(colors.green(`Page ${pageIdx + 1} retrieved.`));
       if (pageIdx + 1 < numberOfPages) {
         pageExec(connect.primary, output, pageIdx + 1, numberOfPages, callback);
       }
@@ -56,7 +62,8 @@ function pageExec(client, output, pageIdx, numberOfPages, callback) {
 
 console.log(colors.yellow('Getting first page...'));
 wstream.write('docId,hash\n');
-connect.primary.operation('Repository.ResultSetPageProvider')
+connect.primary.schemas("*");
+connect.primary.operation('Repository.Query')
   .params({
     query: execQuery,
     language: 'NXQL',
@@ -65,14 +72,18 @@ connect.primary.operation('Repository.ResultSetPageProvider')
   .execute()
   .then((doc) => {
     console.log(colors.green(`Retrieved first page, writing ${doc.resultsCount} record(s).`));
-    doc.entries.forEach((element) => {
-      wstream.write(`${element['ecm:uuid']},${element['content/data']}\n`);
+    doc.entries.forEach((doc) => {
+      let fc = doc.properties;
+      if (fc['file:content']) {
+        fc = fc['file:content'].digest;
+      } else {
+        fc = '';
+      }
+      wstream.write(`${doc.uid},${fc}\n`);
     });
     if (doc.isNextPageAvailable) {
       const callback = closeQuery(doc.numberOfPages - 1);
-      //for (; pageIdx < doc.numberOfPages; pageIdx += 1) {
       pageExec(connect.primary, wstream, 1, doc.numberOfPages, callback);
-      //}
     }
   })
   .catch((error) => {
