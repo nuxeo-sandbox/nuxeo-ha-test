@@ -31,7 +31,7 @@
     "better-queue": "^3.8.10",
     "colors": "^1.4.0",
     "convict": "^6.0.0",
-    "convict-format-with-validator": "^6.0.0",
+    "convict-format-with-validator": "^6.2.0",
     "elasticsearch": "^16.7.1",
     "nuxeo": "^3.16.1",
     "walk": "^2.3.9"
